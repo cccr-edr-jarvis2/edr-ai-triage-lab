@@ -75,8 +75,19 @@ cmd.exe(PID 20558) → rundll32.exe(PID 46643)
 
 ### 파싱 관찰 (1일차): PDF 9종
 
-| 파일 | 요소 수 | 깨진 것 | 고른 파싱 방법 | 이유 |
-| ---- | ------- | ------- | -------------- | ---- |
+| 파일                                     | 요소 수 | 깨진 것                                                  | 고른 파싱 방법      | 이유                                                     |
+| ---------------------------------------- | ------- | -------------------------------------------------------- | ------------------- | -------------------------------------------------------- |
+| 01_response_policy_tables.pdf            | 78      | 표가 Table 0개, Title 50개로 흩어짐. 행과 열 관계 사라짐 | fast(1일차)         | 먼저 전체 9종을 빠르게 비교. 표 복원은 3일차 hi_res 후보 |
+| 02_playbook_credential_dump.pdf          | 21      | 큰 깨짐 없음                                             | fast                | 글자 층이 있는 일반 문서                                 |
+| 03_playbook_ransomware_header_footer.pdf | 31      | Header 4, Footer 2. 반복 머리말, 꼬리말 섞임             | fast + DOC-2 거르기 | 4단계에서 거른 결과 확인                                 |
+| 04_playbook_macro_powershell_code.pdf    | 41      | 코드 줄이 문장처럼 나뉘는지 확인 필요                    | fast                | 1일차는 관찰만                                           |
+| 05_newsletter_two_column.pdf             | 43      | Title 30개. 2단 편집 읽기 순서 확인 필요                 | fast                | 1일차는 관찰만                                           |
+| 06_false_positive_guide_scanned.pdf      | 0       | 스캔 이미지라 글자 0개                                   | fast(실패)          | OCR 후보. 3일차 고도화                                   |
+| 07_weekly_report_chart.pdf               | 34      | 차트 숫자는 글자로 안 나올 수 있음(k12)                  | fast                | 3일차 후보                                               |
+| 08_analyst_notes_attack_en.pdf           | 22      | 영어 문장 정상 추출                                      | fast                | 한국어 질문 검색은 7단계에서 확인                        |
+| 09_response_matrix_complex_tables.pdf    | 237     | Title 128개, Table 0개. 표 관계 사라짐                   | fast(1일차)         | 표 복원은 3일차 hi_res 후보                              |
+
+FontBBox 경고 477줄, 결과는 출력됨. 경고의 정확한 발생 지점과 추출 품질의 관계는 추가 확인 필요.
 
 ### 청킹 값 (1일차) + 🔍 교차 실험 (2일차)
 
