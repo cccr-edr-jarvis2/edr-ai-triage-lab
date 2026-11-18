@@ -44,7 +44,23 @@ def investigate(state: TriageState) -> dict:
     # TODO[AG-1]: telemetry_tools()를 LLM에 연결(bind_tools)하고, 시스템 프롬프트 + 대화(messages)로 호출합니다.
     # 첫 호출이면 대화가 비어 있으니 알림 메시지(_alert_message)를 먼저 넣습니다.
     # 돌려줄 것: 새 메시지들, trace ["조사"], usage (usage_of(응답))
-    raise NotImplementedError("TODO[AG-1]")
+    llm = get_llm().bind_tools(telemetry_tools())
+    history = list(state.get("messages", []))
+    # 첫 호출에는 대화가 비어 있으므로 알림을 첫 메시지로 넣고, 상태에도 같이 남긴다
+    new_msgs = []
+    if not history:
+        alert = state.get("alert")
+        if alert is None:  # 알림 없이 조사를 시작하면 LLM이 근거 없이 답하게 되므로 바로 멈춘다
+            raise ValueError("조사할 알림(alert)이 상태에 없습니다")
+        new_msgs = [_alert_message(alert)]
+    # 시스템 프롬프트는 매번 맨 앞에만 붙이고 상태(대화 기록)에는 저장하지 않는다
+    response = llm.invoke([SystemMessage(content=prompt("investigate"))] + history + new_msgs)
+    usage = usage_of(response)
+    if getattr(response, "tool_calls", None) and state.get("tool_rounds", 0) >= settings.max_tool_rounds:
+        # 왕복 상한에 닿았는데 도구를 또 요청하면, 답 없는 도구 요청이 판정 LLM에 넘어가 대화 규약 오류가 난다.
+        # 요청은 버리고 지금까지 모은 사실로 판정하도록 텍스트 응답으로 바꾼다
+        response = AIMessage(content=response.content or "도구 호출 상한에 닿아 조사를 마칩니다.")
+    return {"messages": new_msgs + [response], "trace": ["조사"], "usage": usage}
 
 
 def run_tools(state: TriageState) -> dict:

@@ -5,7 +5,7 @@
 - fast     : PDF 안의 글자 층을 그대로 읽음. 빠르지만 표 구조와 스캔본은 못 읽음
 - hi_res   : 레이아웃 모델로 페이지를 봄. 표 구조(text_as_html)를 얻을 수 있음. 느리고 첫 실행 때 모델을 내려받음
 - ocr_only : 이미지에서 글자를 인식 (스캔본용, Tesseract 필요)
-"""
+"""  # noqa: EXE002
 
 from __future__ import annotations
 
@@ -42,4 +42,6 @@ def drop_header_footer(elements: list) -> list:
     """페이지마다 반복되는 머리말·꼬리말("대외비" 등)을 걸러냅니다. 03번 PDF로 확인하세요."""
     # TODO[DOC-2]: category가 Header, Footer인 요소를 뺀 목록을 돌려줍니다.
     # 같은 글이 여러 페이지에 반복되는데 Header/Footer로 분류되지 않는 경우도 있습니다. 결과를 눈으로 확인하세요.
-    raise NotImplementedError("TODO[DOC-2]")
+    # raise NotImplementedError("TODO[DOC-2]")
+    # 머리말(Header)과 꼬리말(Footer)로 분류된 요소를 제외하고 나머지를 돌려준다
+    return [e for e in elements if e.category not in ("Header", "Footer")]
