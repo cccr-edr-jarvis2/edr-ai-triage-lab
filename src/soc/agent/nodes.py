@@ -113,10 +113,21 @@ def after_guardrail(state: TriageState) -> str:
 def recommend(state: TriageState) -> dict:
     """권고 노드: 📘 플레이북 검색으로 근거를 찾고, LLM이 조치를 권고합니다."""
     v, alert = state["verdict"], state["alert"]
-    # TODO[AG-2]: search_playbook_fn()으로 플레이북을 검색합니다. 질문은 알림 제목과 판정(기법)으로 만들고,
-    # 판정과 검색 결과를 LLM에 넘겨 Recommendation 형식으로 권고를 받습니다.
-    # 돌려줄 것: playbook(검색 결과), recommendation(dict), trace ["권고"], usage
-    raise NotImplementedError("TODO[AG-2]")
+    techniques = " ".join(v.get("techniques", []))
+    query = " ".join(part for part in (alert.get("title", ""), techniques, "대응 절차와 승인권자") if part)
+    playbook = search_playbook_fn()(query, k=3)
+
+    context = {"verdict": v, "playbook": playbook}
+    msgs = [
+        SystemMessage(content=prompt("recommend")),
+        HumanMessage(content=f"```json\n{json.dumps(context, ensure_ascii=False)}\n```"),
+    ]
+    llm = get_llm().with_structured_output(Recommendation, include_raw=True)
+    out = llm.invoke(msgs)
+    if out["parsed"] is None:
+        raise ValueError("권고 결과를 해석하지 못했습니다") from out.get("parsing_error")
+    return {"playbook": playbook, "recommendation": out["parsed"].model_dump(),
+            "trace": ["권고"], "usage": usage_of(out["raw"])}
 
 
 # ---------------------------------------------------------------------------- 사람 승인 (2일차, 운전 🔍)
