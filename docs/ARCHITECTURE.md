@@ -1,6 +1,6 @@
 # 아키텍처
 
-> 1일차 4-1 설계 초안. 제공된 `TriageState`, 노드와 그래프의 구현 지침을 바탕으로 작성했다. 아래 그림은 4-2에서 구현할 목표이며, 아직 실행 결과가 아니다.
+> 1일차 설계와 구현된 그래프의 흐름을 정리했다. 가드레일 검사와 사람 승인은 아직 미구현이다.
 
 ## 1. 에이전트 설계도
 
@@ -14,13 +14,14 @@ flowchart TD
     Tools --> Investigate
     More -- 아니요 --> Judge[판정]
     Judge --> Guardrail[가드레일: 1일차에는 검사 미구현]
-    Guardrail --> Recommend[권고]
+    Guardrail -- 재조사 --> Investigate
+    Guardrail -- 권고 진행 --> Recommend[권고]
     Recommend --> Approval[승인: 1일차에는 승인 기능 미구현]
     Approval --> Report[리포트]
     Report --> End([종료])
 ```
 
-1일차 확인 경로: `조사 → 도구 → 조사 → 판정 → 권고 → 리포트`. 가드레일과 승인 노드가 경로에 포함되더라도 실제 검증이나 승인 대기는 아직 수행하지 않는다. 그래프를 구현한 뒤 `python -m soc.agent.graph`의 출력과 이 그림을 비교한다.
+1일차 확인 경로: `조사 → 도구 → 조사 → 판정 → 권고 → 리포트`. 가드레일과 승인 노드가 경로에 포함되더라도 실제 검증이나 승인 대기는 아직 수행하지 않는다. 그림은 `python -m soc.agent.graph`의 출력과 비교한 개념도다.
 
 ### 상태 (TriageState)
 

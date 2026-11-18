@@ -19,10 +19,23 @@ def build_graph(checkpointer=None):
     g.add_node("recommend", nodes.recommend)
     g.add_node("approval", nodes.approval)
     g.add_node("report", nodes.report)
-    # TODO[AG-3]: 엣지를 잇습니다. 화이트보드 설계(ARCHITECTURE.md)의 갈림길을 코드로 옮기는 단계입니다.
-    # START → investigate, investigate → (tools 또는 judge: nodes.after_investigate), tools → investigate,
-    # judge → guardrail → (investigate 또는 recommend: nodes.after_guardrail), recommend → approval → report → END
-    raise NotImplementedError("TODO[AG-3]")
+
+    # 조사 결과에 도구 요청이 있고 호출 횟수가 남았으면 도구를 실행하고,
+    # 요청이 없거나 상한에 도달하면 판정한다. 도구 결과는 다시 조사에 전달한다.
+    g.add_edge(START, "investigate")
+    g.add_conditional_edges("investigate", nodes.after_investigate, {"tools": "tools", "judge": "judge"})
+    g.add_edge("tools", "investigate")
+
+    # 판정 후 가드레일 결과에 따라 재조사하거나 권고로 진행한다.
+    # 실제 근거 검사 함수는 아직 미구현이다.
+    g.add_edge("judge", "guardrail")
+    g.add_conditional_edges("guardrail", nodes.after_guardrail,
+                            {"investigate": "investigate", "recommend": "recommend"})
+
+    # 권고를 승인 노드와 리포트에 전달한다. 실제 승인 대기 기능은 아직 미구현이다.
+    g.add_edge("recommend", "approval")
+    g.add_edge("approval", "report")
+    g.add_edge("report", END)
     return g.compile(checkpointer=checkpointer)
 
 
