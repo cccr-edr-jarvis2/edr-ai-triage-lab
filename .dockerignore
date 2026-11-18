@@ -18,6 +18,7 @@ kubeconfig.*
 .venv
 .git
 __pycache__
+*.egg-info
 dist
 instructor
 docs

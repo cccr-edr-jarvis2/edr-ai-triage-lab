@@ -20,6 +20,7 @@ kubeconfig.*
 # Local environment and generated files
 .venv/
 __pycache__/
+*.egg-info/
 *.pyc
 .DS_Store
 data/sim.jsonl
