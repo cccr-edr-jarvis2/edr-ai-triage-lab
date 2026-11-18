@@ -4,10 +4,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY src ./src
-COPY data/telemetry ./data/telemetry
-ENV PYTHONPATH=/app/src
 RUN useradd -m app
+COPY --chown=app:app src ./src
+COPY --chown=app:app data/telemetry ./data/telemetry
+ENV PYTHONPATH=/app/src
 USER app
 EXPOSE 8000 9100
 CMD ["uvicorn", "soc.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -37,6 +37,21 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  api:
+    build: .
+    environment:
+      BACKEND: real
+      OPENSEARCH_URL: http://opensearch:9200
+      POSTGRES_DSN: postgresql://soc:soc@postgres:5432/soc
+      FAKE_LLM: "true"
+      TELEMETRY_TOOLS: mock
+      KB_TOOLS: mock
+    depends_on:
+      - opensearch
+      - postgres
+    ports:
+      - "127.0.0.1:8000:8000"
+
 volumes:
   opensearch-data:
   postgres-data:
