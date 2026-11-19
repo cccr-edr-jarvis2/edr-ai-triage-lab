@@ -1,0 +1,50 @@
+# 1단계: 외부 의존성 없이(BACKEND=memory) API 하나만 올려
+# 서버 -> k3s -> 이미지 -> 파드 -> 포트포워딩 경로를 확인한다.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: soc
+  labels:
+    app: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/cccr-edr-jarvis2/edr-ai-triage-lab:0.1.0
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: BACKEND
+              value: memory
+          # 한 서버(4 vCPU, 16GB)에 OpenSearch, Postgres가 뒤에 함께 올라오므로 처음부터 상한을 둔다.
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+---
+# 클러스터 안에서만 보이는 주소(ClusterIP). 80으로 받아 파드의 8000으로 넘긴다.
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: soc
+spec:
+  type: ClusterIP
+  selector:
+    app: api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

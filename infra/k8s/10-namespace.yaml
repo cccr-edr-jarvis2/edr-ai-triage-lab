@@ -1,0 +1,5 @@
+# 이 과제의 모든 리소스를 soc 네임스페이스에 모은다. 지울 때도 네임스페이스 하나로 정리된다.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: soc
